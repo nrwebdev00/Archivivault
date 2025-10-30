@@ -1,0 +1,55 @@
+# Node.js
+node_modules/
+dist/
+tmp/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Nx build artifacts
+coverage/
+.cache/
+nx-report.html
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+*/*.env
+
+# Docker
+docker-compose.override.yml
+*.pid
+*.seed.sql
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Prisma (if used)
+prisma/migrations/
+prisma/dev.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Mobile (React Native or Flutter)
+android/
+ios/
+*.apk
+*.ipa
+
+# Web (if added later)
+build/
+public/
+
+# Misc
+*.tgz
+*.sqlite
