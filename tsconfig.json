@@ -3,11 +3,12 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "rootDir": "src",
+    "rootDir": "./",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions":true
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   }
 }
