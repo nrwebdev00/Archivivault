@@ -2,9 +2,12 @@ import dotenv from 'dotenv';
 import express from 'express';
 import * as colors from 'colors';
 
-import { pgPool } from './db/postgresql.ts';
+import { prisma } from './db/prisma.ts';
 import { mongoDBConnection } from './db/mongodb.ts';
 import { connectRedis } from './db/redis.service.ts';
+
+// Routes
+import auth_router from "./routers/auth_router.ts";
 
 // ENV vars config 
 dotenv.config();
@@ -19,12 +22,17 @@ bootstrap();
 
 // Express Config
 const app = express();
+app.use(express.json());
 const port = process.env.PORT || 3300;
+
+
 
 // Routes
 app.get('/', (req,res)=>{
     res.send('Arichivivault is open and running')
 });
+
+app.use( '/api/auth', auth_router);
 
 // Listening
 app.listen(port, ()=>{

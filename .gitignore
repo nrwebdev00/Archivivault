@@ -53,3 +53,4 @@ public/
 # Misc
 *.tgz
 *.sqlite
+/generated/prisma
