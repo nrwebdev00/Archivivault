@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '../../db/prisma.ts';
+import { prisma } from '../../config/db/prisma.ts';
 
 
 import { transporter } from '../../utils/mailer.ts';

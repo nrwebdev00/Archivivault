@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import { prisma } from '../db/prisma.ts';
+import { prisma } from '../config/db/prisma.ts';
 import jwt from 'jsonwebtoken';
 
 import { JWT_SECRET } from '../config/auth.ts';

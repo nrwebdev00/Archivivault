@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 import express from 'express';
 import * as colors from 'colors';
 
-import { prisma } from './db/prisma.ts';
-import { mongoDBConnection } from './db/mongodb.ts';
-import { connectRedis } from './db/redis.service.ts';
+import { prisma } from './config/db/prisma.ts';
+import { mongoDBConnection } from './config/db/mongodb.ts';
+import { connectRedis } from './config/db/redis.service.ts';
 
 // Routes
 import auth_router from "./routers/auth_router.ts";
