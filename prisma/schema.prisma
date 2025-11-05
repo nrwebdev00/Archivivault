@@ -13,7 +13,7 @@ model User {
   email                      String    @unique
   password_hash              String
   roles                      String[]  @default(["collector", "user"])
-  tenant_id                  String
+  tenant_id                  String    @unique
   oauth_provider             String?
   oauth_id                   String?
   is_active                  Boolean   @default(true)
@@ -22,6 +22,7 @@ model User {
   email_confirmed            Boolean   @default(false)
   email_confirmation_token   String?
   email_confirmation_expires DateTime? @db.Timestamptz(6)
+  email_confirmed_at         DateTime? @db.Timestamptz(6)
   password_reset_token       String?
   password_reset_expires     DateTime? @db.Timestamptz(6)
   is_2fa_enabled             Boolean   @default(false)
