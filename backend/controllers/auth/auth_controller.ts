@@ -1,9 +1,9 @@
-import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../../db/prisma.ts';
 
-
+import { catchAsync } from '../../utils/catchAsync.ts';
+import { customError } from '../../utils/customError.ts';
 import { transporter } from '../../utils/mailer.ts';
 import { 
     normalizeEmail, 
@@ -16,14 +16,13 @@ import { raw } from '@prisma/client/runtime/library';
 // @desc create user - Register
 // @route POST /api/auth/register
 // @access PUBLIC
-const register = asyncHandler(async (req, res) =>{
+const register = catchAsync(async (req, res, next) =>{
     const { email, name, password} = req.body;
 
     // Check for user
     const emailNormalize = normalizeEmail(email);
     if(await isEmailInUse(emailNormalize)){
-        res.status(400).json({ msg:"error", error:'Email is already in use'});
-        return;
+        throw new customError('Email is Already in use', 400);
     }
 
     // Hash password
@@ -41,8 +40,7 @@ const register = asyncHandler(async (req, res) =>{
 
     // Error Check Make sure user is created
     if(!user){
-        res.status(400).json({ msg:'error', error:"Unable to create a user."});
-        return;
+        throw new customError('Unable to create a user', 400);
     }
 
     // Check if user.id and user.tenant_id == update tenant_id if so
@@ -101,40 +99,35 @@ const register = asyncHandler(async (req, res) =>{
 // @desc Auth user - Login
 // @route POST /api/auth/login
 // @access PUBLIC
-const login = asyncHandler(async (req, res) =>{
+const login = catchAsync(async (req, res, next) =>{
     const { email, password } = req.body;
 
     // Get User
     const emailNormalize = normalizeEmail(email);
     const user = await prisma.user.findUnique({ where: {email:emailNormalize}});
     if(!user){
-        res.status(401).json({ msg:"error", error: 'Invalid Email or Password.'});
-        return;
+        throw new customError('Invalid Email or Password.', 401);
     }
 
     // Check if Password is a Match
     const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
     if(!isPasswordMatch){
-        res.status(401).json({msg:"error", error: 'Invalid Email or Password.' });
-        return;
+        throw new customError('Invalid Email or Password.', 401);
     }
 
     // Check if user is Active or not
     if(!user.is_active){
-        res.status(403).json({msg:'error', error:'Access Denied: Account in In Active'});
-        return;
+        throw new customError('Access Denied: Account is Inactive.', 403);
     }
 
     if(!user.email_confirmed){
-        res.status(403).json({msg:'error', error:'Email Address is not Confirmed, please Confirm before logging in.'});
-        return;
+        throw new customError('Email Address is not Confirmed, Please Confirm.', 403)
     }
 
     // Assign JWToken
     const token = createLoginToken(user.id, user.roles, user.tenant_id);
     if(token == "NO_TOKEN"){
-        res.status(401).json({ msg:"error", error:'Invalid Token'});
-        return;
+        throw new customError('Invalid Token', 403);
     }
 
     // data to send back to front end
@@ -155,7 +148,7 @@ const login = asyncHandler(async (req, res) =>{
 // @desc get user - User Info
 // @route GET /api/auth/user
 // @access PRIVATE - login must be user
-const getUser = asyncHandler(async (req, res) =>{
+const getUser = catchAsync(async (req, res, next) =>{
     const user = await prisma.user.findUnique({
         where: { id: req.user?.user_id },
         select:{
@@ -171,10 +164,8 @@ const getUser = asyncHandler(async (req, res) =>{
         }
     });
     if(!user){
-        res.status(404).json({ msg:'error', error:'user not found.'});
-        return;
+        throw new customError('user not found.', 404);
     }
-    console.log(`User: ${user}`);
 
     res.status(200).json({ msg:"success", user})
 });
@@ -182,13 +173,12 @@ const getUser = asyncHandler(async (req, res) =>{
 // @desc Confirm user Registration -Confirm Registration
 // @route GET /api/auth/confirmRegistration/:token
 // @access PUBLIC - Login
-const confirmEmailRegistration = asyncHandler(async (req, res) =>{
+const confirmEmailRegistration = catchAsync(async (req, res, next) =>{
     const rawToken = req.query.token;
     const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
 
     if(!token || typeof(token) != 'string'){
-        res.status(400).json({ msg:'error', error:'Missing or Invalid token.'});
-        return;
+        throw new customError('Missing or Invalid Token', 400);
     }
 
     // Find user by token given
@@ -200,8 +190,7 @@ const confirmEmailRegistration = asyncHandler(async (req, res) =>{
 
     // return if now user by token and send error
     if(!user){
-        res.status(400).json({ msg:'error', error:'Token is invalid or expired'});
-        return;
+        throw new customError('Token is invalid or expired', 400);
     }
 
     // Update Database

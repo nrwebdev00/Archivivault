@@ -6,6 +6,9 @@ import { prisma } from './db/prisma.ts';
 import { mongoDBConnection } from './db/mongodb.ts';
 import { connectRedis } from './db/redis.service.ts';
 
+// Middleware
+import { errorHandler } from "./middleware/error_handler_middleware/errorHandler.ts";
+
 // Routes
 import auth_router from "./routers/auth_router.ts";
 
@@ -33,6 +36,9 @@ app.get('/', (req,res)=>{
 });
 
 app.use( '/api/auth', auth_router);
+
+// Declare Error handling after routes
+app.use(errorHandler);
 
 // Listening
 app.listen(port, ()=>{

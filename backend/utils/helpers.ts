@@ -1,4 +1,3 @@
-import asyncHandler from 'express-async-handler';
 import { prisma } from '../db/prisma.ts';
 import jwt from 'jsonwebtoken';
 
