@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '../../db/prisma.ts';
+import { prisma } from '../../config/db/prisma.ts';
 
 import { catchAsync } from '../../utils/catchAsync.ts';
 import { customError } from '../../utils/customError.ts';
