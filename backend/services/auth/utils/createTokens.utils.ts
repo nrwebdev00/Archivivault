@@ -1,4 +1,3 @@
-import { prisma } from '../../../config/db/prisma.ts';
 import jwt from 'jsonwebtoken';
 
 import { JWT_SECRET } from '../../../config/auth.ts';

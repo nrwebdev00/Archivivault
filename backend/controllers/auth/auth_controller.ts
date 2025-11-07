@@ -4,11 +4,12 @@ import { prisma } from '../../config/db/prisma.ts';
 import { catchAsync } from '../../utils/catchAsync.ts';
 import { customError } from '../../utils/customError.ts';
 import { registerUser } from '../../services/auth/registerUser.service.ts';
+import { loginUser } from '../../services/auth/loginUser.service.ts';
+
 import { 
     normalizeEmail, 
     createLoginToken,
 } from '../../utils/helpers.ts';
-import { raw } from '@prisma/client/runtime/library';
 
 // @desc create user - Register
 // @route POST /api/auth/register
@@ -22,49 +23,8 @@ const register = catchAsync(async (req, res, next) =>{
 // @route POST /api/auth/login
 // @access PUBLIC
 const login = catchAsync(async (req, res, next) =>{
-    const { email, password } = req.body;
-
-    // Get User
-    const emailNormalize = normalizeEmail(email);
-    const user = await prisma.user.findUnique({ where: {email:emailNormalize}});
-    if(!user){
-        throw new customError('Invalid Email or Password.', 401);
-    }
-
-    // Check if Password is a Match
-    const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
-    if(!isPasswordMatch){
-        throw new customError('Invalid Email or Password.', 401);
-    }
-
-    // Check if user is Active or not
-    if(!user.is_active){
-        throw new customError('Access Denied: Account is Inactive.', 403);
-    }
-
-    if(!user.email_confirmed){
-        throw new customError('Email Address is not Confirmed, Please Confirm.', 403)
-    }
-
-    // Assign JWToken
-    const token = createLoginToken(user.id, user.roles, user.tenant_id);
-    if(token == "NO_TOKEN"){
-        throw new customError('Invalid Token', 403);
-    }
-
-    // data to send back to front end
-    const data = {
-        user:{
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'tenant_id': user.tenant_id,
-            'roles': user.roles,
-        },
-        token
-    }
-    // Send res back
-    res.status(200).json({msg: 'success', data });
+    const data = await loginUser(req.body);
+    res.status(200).json({msg:'success', data});
 });
 
 // @desc get user - User Info
