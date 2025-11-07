@@ -1,15 +1,12 @@
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+ 
 import { prisma } from '../../config/db/prisma.ts';
-
 import { catchAsync } from '../../utils/catchAsync.ts';
 import { customError } from '../../utils/customError.ts';
-import { transporter } from '../../utils/mailer.ts';
+import { registerUser } from '../../services/auth/registerUser.service.ts';
 import { 
     normalizeEmail, 
-    isEmailInUse, 
     createLoginToken,
-    createEmailConfirmToken
 } from '../../utils/helpers.ts';
 import { raw } from '@prisma/client/runtime/library';
 
@@ -17,82 +14,7 @@ import { raw } from '@prisma/client/runtime/library';
 // @route POST /api/auth/register
 // @access PUBLIC
 const register = catchAsync(async (req, res, next) =>{
-    const { email, name, password} = req.body;
-
-    // Check for user
-    const emailNormalize = normalizeEmail(email);
-    if(await isEmailInUse(emailNormalize)){
-        throw new customError('Email is Already in use', 400);
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Add user to DB
-    const user = await prisma.user.create({
-        data:{
-            email: emailNormalize,
-            name,
-            password_hash: hashedPassword,
-            tenant_id: uuidv4(),
-        },
-    });
-
-    // Error Check Make sure user is created
-    if(!user){
-        throw new customError('Unable to create a user', 400);
-    }
-
-    // Check if user.id and user.tenant_id == update tenant_id if so
-    if(user.id == user.tenant_id){
-        await prisma.user.update({
-            where:{ id: user.id},
-            data:{ tenant_id: uuidv4()}
-        }); 
-    }
-
-    // Create Email Confirmation Token and Send Email
-    const emailToken = createEmailConfirmToken(user.id, user.email, user.tenant_id);
-    const tokenExpiresAt = new Date(Date.now() + 24 *60 *60 *1000);
-    await prisma.user.update({
-        where:{ id: user.id},
-        data: { email_confirmation_token: emailToken, email_confirmation_expires: tokenExpiresAt }
-    });
-
-    // Send Email
-    // /api/auth/confirmRegistration/:key
-    const confirmUrl=`http://localhost:5500/api/auth/confirm-email?token=${emailToken}`
-    await transporter.sendMail({
-        from: '"Archivivault" archivivault@gmail.com',
-        to: user.email,
-        subject: `Welcome ${user.name}, to Archivivault Please Confirm Email.`,
-        html: `
-            <h2>Welcome to Archivivault!</h2>
-            <p>Click the link below to confirm your email:</p>
-            <a href="${confirmUrl}">Confirm Email</a>
-        `,
-
-
-    })
-    // TODO Create Blank Profile
-    // Create Blank Profile for User
-
-    // Login user 
-    const token = createLoginToken(user.id, user.roles, user.tenant_id);
-
-    // data to send
-    const data = {
-        user:{
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'tenant_id': user.tenant_id,
-            'roles': user.roles,
-        },
-        token,
-    }
-
-    // Send res back 
+    const data = await registerUser(req.body);
     res.status(200).json({msg: 'success', data,})
 });
 
