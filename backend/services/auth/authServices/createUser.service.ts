@@ -1,6 +1,6 @@
-import { prisma } from "../../config/db/prisma.ts"
+import { prisma } from "../../../config/db/prisma.ts"
 import { v4 as uuidv4 } from 'uuid';
-import { customError } from "../../utils/customError.ts";
+import { customError } from "../../../utils/customError.ts";
 
 export type PublicUser = {
   id: string;

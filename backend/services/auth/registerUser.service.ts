@@ -1,7 +1,7 @@
 import { checkIfEmailInUse, normalizeEmail } from './utils/email.utils.ts';
 import { hashPassword } from './utils/auth.utils.ts';
-import { createUser } from './createUser.service.ts';
-import { EmailConfirmation } from './EmailConfirmation.service.ts';
+import { createUser } from './authServices/createUser.service.ts';
+import { EmailConfirmation } from './authServices/EmailConfirmation.service.ts';
 import { createLoginToken } from './utils/createTokens.utils.ts';
 
 type RegisterInput = {

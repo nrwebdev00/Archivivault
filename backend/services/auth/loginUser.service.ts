@@ -1,4 +1,4 @@
-import { publicLoggedInUser } from './publicLoggedInUser.service.ts';
+import { publicLoggedInUser } from './authServices/publicLoggedInUser.service.ts';
 
 type LoginInput = {
     email : string,

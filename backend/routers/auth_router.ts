@@ -7,14 +7,17 @@ import {
     register, 
     login, 
     getUser, 
-    confirmEmailRegistration 
+    confirmEmailRegistration,
+    SendNewEmailToken
 } from '../controllers/auth/auth_controller.ts';
 
 const router = Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/new-email-token', SendNewEmailToken)
 router.get('/confirm-email', confirmEmailRegistration);
+
 
 // Dev use
 router.get('/', requireAuth, authorizationRoleCheck('user'), getUser); // DEV use to make sure middleware is working

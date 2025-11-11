@@ -1,6 +1,6 @@
-import { customError } from '../../utils/customError.ts';
-import { comparePassword, getUserAuth } from './utils/auth.utils.ts'
-import { createLoginToken } from './utils/createTokens.utils.ts';
+import { customError } from '../../../utils/customError.ts';
+import { comparePassword, getUserAuth } from '../utils/auth.utils.ts'
+import { createLoginToken } from '../utils/createTokens.utils.ts';
 
 const publicLoggedInUser = async(email : string, password : string) =>{
     const user = await getUserAuth(email);

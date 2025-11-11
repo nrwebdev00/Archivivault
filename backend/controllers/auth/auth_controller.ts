@@ -1,15 +1,11 @@
-import bcrypt from 'bcryptjs';
- 
-import { prisma } from '../../config/db/prisma.ts';
 import { catchAsync } from '../../utils/catchAsync.ts';
 import { customError } from '../../utils/customError.ts';
 import { registerUser } from '../../services/auth/registerUser.service.ts';
 import { loginUser } from '../../services/auth/loginUser.service.ts';
+import { confirmEmail } from '../../services/auth/emailConfirmation.service.ts';
+import { createAndSendNewEmailToken } from '../../services/auth/sendNewEmailConfirmationToken.service.ts';
 
-import { 
-    normalizeEmail, 
-    createLoginToken,
-} from '../../utils/helpers.ts';
+import { prisma } from '../../config/db/prisma.ts';
 
 // @desc create user - Register
 // @route POST /api/auth/register
@@ -27,6 +23,7 @@ const login = catchAsync(async (req, res, next) =>{
     res.status(200).json({msg:'success', data});
 });
 
+// This Route is Dev only to check authentication and authorizations
 // @desc get user - User Info
 // @route GET /api/auth/user
 // @access PRIVATE - login must be user
@@ -54,39 +51,28 @@ const getUser = catchAsync(async (req, res, next) =>{
 
 // @desc Confirm user Registration -Confirm Registration
 // @route GET /api/auth/confirmRegistration/:token
-// @access PUBLIC - Login
+// @access PUBLIC 
 const confirmEmailRegistration = catchAsync(async (req, res, next) =>{
-    const rawToken = req.query.token;
+    const rawToken = req.query.token
     const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
-
     if(!token || typeof(token) != 'string'){
         throw new customError('Missing or Invalid Token', 400);
     }
 
-    // Find user by token given
-    const user = await prisma.user.findFirst({
-        where: {
-            email_confirmation_token : token,
-        }
-    });
+    const data = await confirmEmail(token);
 
-    // return if now user by token and send error
-    if(!user){
-        throw new customError('Token is invalid or expired', 400);
-    }
+    res.status(200).json({ msg:'success', data })
 
-    // Update Database
-    await prisma.user.update({
-        where: { id: user.id},
-        data:{
-            email_confirmed: true,
-            email_confirmation_token: null,
-            email_confirmation_expires: null,
-        },
-    });
+});
 
-    res.status(200).json({ msg:'success',});
-    return;
+// @desc Send new Email Confirmation Token - by email
+// @route POST /api/auth/newEmailToken
+// @access PUBLIC 
+const SendNewEmailToken = catchAsync(async (req, res, next) =>{
+    const { email } = req.body
+    const data = await createAndSendNewEmailToken(email)
+
+    res.status(200).json({msg:'success', data});
 });
 
 // @desc update User password - Change Password
@@ -105,4 +91,4 @@ const confirmEmailRegistration = catchAsync(async (req, res, next) =>{
 
 // Oauth integration 
 
-export { register, login, getUser, confirmEmailRegistration }
+export { register, login, getUser, confirmEmailRegistration, SendNewEmailToken }
