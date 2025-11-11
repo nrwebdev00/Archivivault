@@ -62,7 +62,6 @@ const confirmEmailRegistration = catchAsync(async (req, res, next) =>{
     const data = await confirmEmail(token);
 
     res.status(200).json({ msg:'success', data })
-
 });
 
 // @desc Send new Email Confirmation Token - by email

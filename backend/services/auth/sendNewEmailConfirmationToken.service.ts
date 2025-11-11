@@ -4,7 +4,7 @@ import { prisma } from '../../config/db/prisma.ts';
 
 
 const createAndSendNewEmailToken = async(email : string) =>{
-    // Will throw Error if Email not Valid
+    // Verify Input and Get user
     const isEmail = verifyIfInputIsAnEmailAddress(email);
     const user = await prisma.user.findUnique({
         where : {email}
@@ -13,8 +13,7 @@ const createAndSendNewEmailToken = async(email : string) =>{
     // Not throw Error if not found --> return same message if user or !user
     if(user && isEmail){
         // Creates Token and Send out email with URL
-        console.log("Dev Message: Email to be sent at this point.")
-        //await EmailConfirmation(user.id, user.email, user.tenant_id, user.name);
+        await EmailConfirmation(user.id, user.email, user.tenant_id, user.name);
     }
 
     const data = {
