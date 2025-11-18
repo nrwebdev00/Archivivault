@@ -1,6 +1,6 @@
 import { prisma } from '../../../config/db/prisma.ts';
 
-import { createEmailConfirmation } from '../utils/createTokens.utils.ts';
+import { createEmailConfirmation, createForgotPasswordToken } from '../utils/createTokens.utils.ts';
 import { transporter } from '../utils/mailer.utils.ts'
 
 const EmailConfirmation = async(id : string, email : string, tenant_id : string, name : string) =>{
@@ -30,4 +30,29 @@ const EmailConfirmation = async(id : string, email : string, tenant_id : string,
     });
 };
 
-export { EmailConfirmation }
+const ForgotPasswordReset = async(id :string, email : string, tenant_id : string, name : string) =>{
+    const forgotPasswordToken = createForgotPasswordToken(id, email, tenant_id);
+    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 30);
+
+    await prisma.user.update({
+        where: { id },
+        data: {
+            password_reset_token: forgotPasswordToken,
+            password_reset_expires: tokenExpiresAt
+        }
+    });
+
+    const resetPasswordUrl = `${process.env.API_DOMAIN}auth/resetPassword?token=${forgotPasswordToken}`;
+    await transporter.sendMail({
+        from: '"Archivivault" archivivault@gmail.com',
+        to: email,
+        subject: `Sent Password Reset for Archivivault.`,
+        html: `
+            <h2>Password Reset</h2>
+            <p>Click the link below To Reset Your Password</p>
+            <a href="${resetPasswordUrl}">Confirm Email</a>
+        `,
+    });
+};
+
+export { EmailConfirmation, ForgotPasswordReset }

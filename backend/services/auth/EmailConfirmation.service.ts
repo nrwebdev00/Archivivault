@@ -1,7 +1,7 @@
 import { prisma } from "../../config/db/prisma.ts";
 import { customError } from "../../utils/customError.ts";
 
-const confirmEmail = async(token : string) =>{
+const confirmEmailTokenRegistration = async(token : string) =>{
     // Get User by Token
     const user = await prisma.user.findFirst({
         where:{
@@ -18,7 +18,8 @@ const confirmEmail = async(token : string) =>{
         data:{
             email_confirmed: true,
             email_confirmation_token: null,
-            email_confirmation_expires: null
+            email_confirmation_expires: null,
+            email_confirmed_at: new Date(),
         },
     });
 
@@ -29,4 +30,24 @@ const confirmEmail = async(token : string) =>{
     return data;
 }
 
-export { confirmEmail }
+const confirmEmailTokenReset = async(token : string) =>{
+    // Get User By token
+    const user = await prisma.user.findFirst({
+        where:{
+            password_reset_token : token
+        }
+    });
+    if(!user || user.password_reset_expires!.getTime() < Date.now()){
+        throw new customError('Invalid or Expired Token', 400);
+    }
+
+    const data = {
+        note : 'Token Verified - Proceed to reset password.'
+    }
+
+    return data;
+};
+
+
+
+export { confirmEmailTokenRegistration, confirmEmailTokenReset }

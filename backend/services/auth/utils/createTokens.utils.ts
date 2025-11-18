@@ -45,4 +45,22 @@ const createLoginToken = (id : string, roles : string[], tenant_id : string) => 
     return token;
 };
 
-export { createEmailConfirmation, createLoginToken }
+const createForgotPasswordToken = (id: string, email: string, tenant_id : string) =>{
+    const payload = {
+        purpose : 'forgot_password',
+        user_id : id,
+        email,
+        tenant_id,
+        iat: Math.floor(Date.now() / 1000),
+        jti: crypto.randomUUID()
+    }
+
+    const token = jwt.sign(
+        payload,
+        JWT_SECRET,
+        {expiresIn: '30m' },
+    );
+    return token
+};
+
+export { createEmailConfirmation, createLoginToken, createForgotPasswordToken }
